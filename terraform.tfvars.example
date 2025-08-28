@@ -1,0 +1,10 @@
+# Example configuration for Terraform Cloud
+# Copy this file to terraform.tfvars and modify the values
+
+region = "eu-west-1"
+instance_type = "g4dn.xlarge"
+key_name = "YOUR_AWS_KEY_PAIR_NAME"
+allowed_cidr_blocks = ["YOUR_IP/32"]  # Replace with your IP for security
+instance_name = "wy-obs-gpu-streaming"
+aws_provider_role_arn_wyexternal = "arn:aws:iam::858373385149:role/TerraformRunner"
+environment = "beta"
