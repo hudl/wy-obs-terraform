@@ -29,19 +29,35 @@ Before execution, configure the following variables in the Terraform Cloud works
 ### 2. Local Configuration
 ```bash
 # 1. Project is already configured for "hudl" organization and "wyscout-magicbox-prod" workspace
-# 2. Login to Terraform Cloud
+# 2. Login to Terraform Cloud (only needed for local development)
 terraform login
 
-# 3. Initialize the project
+# 3. Initialize the project (only needed for local development)
 terraform init
 
 # 4. Validate the configuration
 terraform validate
 
-# 5. Plan the changes
+# 5. Plan the changes (optional - will also run automatically via Git)
 terraform plan
 
-# 6. Apply the changes
+# 6. For production deployment: Push to master branch
+git push origin master
+```
+
+## Deployment Workflow
+
+### Via Terraform Cloud (Recommended)
+1. **Configure workspace** `wyscout-magicbox-prod` in Terraform Cloud
+2. **Connect GitHub repository**: `https://github.com/hudl/wy-obs-terraform`
+3. **Set trigger branch**: `master`
+4. **Configure required variables** (see Variables section above)
+5. **Push to master** → Automatic deployment
+
+### Via Local CLI (Development Only)
+```bash
+terraform init
+terraform plan
 terraform apply
 ```
 
