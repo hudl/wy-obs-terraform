@@ -123,3 +123,4 @@ The g4dn.xlarge instance has an approximate cost of €0.47/hour in eu-west-1.
 - Supports assume_role for AWS authentication
 - Includes default tags for Environment and Project
 - **Amazon DCV** provides high-performance remote access for graphics applications
+# Trigger deployment
