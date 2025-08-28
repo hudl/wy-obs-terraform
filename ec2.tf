@@ -29,16 +29,24 @@ data "aws_ami" "windows" {
   }
 }
 
-# Security Group for RDP access
-resource "aws_security_group" "rdp" {
-  name_prefix = "wy-obs-rdp-"
-  description = "Security group for RDP access"
+# Security Group for DCV access
+resource "aws_security_group" "dcv" {
+  name_prefix = "wy-obs-dcv-"
+  description = "Security group for DCV access"
 
   ingress {
-    description = "RDP"
-    from_port   = 3389
-    to_port     = 3389
+    description = "DCV"
+    from_port   = 8443
+    to_port     = 8443
     protocol    = "tcp"
+    cidr_blocks = var.allowed_cidr_blocks
+  }
+
+  ingress {
+    description = "DCV UDP"
+    from_port   = 8443
+    to_port     = 8443
+    protocol    = "udp"
     cidr_blocks = var.allowed_cidr_blocks
   }
 
@@ -50,7 +58,7 @@ resource "aws_security_group" "rdp" {
   }
 
   tags = {
-    Name        = "wy-obs-rdp-sg"
+    Name        = "wy-obs-dcv-sg"
     Environment = var.environment
     Project     = "wy-obs"
   }
@@ -61,7 +69,7 @@ resource "aws_instance" "windows_gpu" {
   ami                    = data.aws_ami.windows.id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.rdp.id]
+  vpc_security_group_ids = [aws_security_group.dcv.id]
 
   # UserData script for automatic software installation
   user_data = base64encode(templatefile("${path.module}/userdata.ps1", {

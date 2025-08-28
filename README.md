@@ -1,78 +1,109 @@
 # AWS EC2 Windows GPU Instance with OBS
 
-Questo progetto Terraform crea un'istanza EC2 Windows con driver GPU e software preinstallato come OBS Studio.
+This Terraform project creates an AWS EC2 Windows instance with GPU drivers and pre-installed software like OBS Studio, accessible via Amazon DCV.
 
-## Prerequisiti
+## Prerequisites
 
-1. **Account AWS** con permessi appropriati
-2. **Terraform Cloud workspace** esistente
-3. **Terraform CLI** installato localmente
-4. **AWS CLI** configurato
+1. **AWS Account** with appropriate permissions
+2. **Terraform Cloud workspace** existing (`wyscout-magicbox-prod`)
+3. **Terraform CLI** installed locally
+4. **AWS CLI** configured
 
-## Configurazione
+## Configuration
 
 ### 1. Terraform Cloud
-Prima dell'esecuzione, configura le seguenti variabili nel workspace Terraform Cloud `wyscout-magicbox-prod`:
+Before execution, configure the following variables in the Terraform Cloud workspace `wyscout-magicbox-prod`:
 
-#### Variabili d'ambiente:
-- `AWS_ACCESS_KEY_ID` - AWS credentials (se non usi assume_role)
-- `AWS_SECRET_ACCESS_KEY` - AWS credentials (se non usi assume_role)
+#### Environment Variables:
+- `AWS_ACCESS_KEY_ID` - AWS credentials (if not using assume_role)
+- `AWS_SECRET_ACCESS_KEY` - AWS credentials (if not using assume_role)
 
-#### Variabili Terraform:
+#### Terraform Variables:
 - `region` - AWS region (default: eu-west-1)
 - `instance_type` - EC2 instance type (default: g4dn.xlarge) 
-- `key_name` - AWS key pair name for RDP access
-- `allowed_cidr_blocks` - CIDR blocks allowed for RDP (default: ["0.0.0.0/0"])
+- `key_name` - AWS key pair name for DCV access
+- `allowed_cidr_blocks` - CIDR blocks allowed for DCV (default: ["0.0.0.0/0"])
 - `aws_provider_role_arn_wyexternal` - IAM role ARN (default: arn:aws:iam::858373385149:role/TerraformRunner)
 - `environment` - Environment name (default: beta)
 
-### 2. Configurazione Locale
+### 2. Local Configuration
 ```bash
-# 1. Il progetto è già configurato per l'organizzazione "hudl" e workspace "wyscout-magicbox-prod"
-# 2. Login a Terraform Cloud
+# 1. Project is already configured for "hudl" organization and "wyscout-magicbox-prod" workspace
+# 2. Login to Terraform Cloud
 terraform login
 
-# 3. Inizializza il progetto
+# 3. Initialize the project
 terraform init
 
-# 4. Valida la configurazione
+# 4. Validate the configuration
 terraform validate
 
-# 5. Pianifica le modifiche
+# 5. Plan the changes
 terraform plan
 
-# 6. Applica le modifiche
+# 6. Apply the changes
 terraform apply
 ```
 
-## Caratteristiche
+## Features
 
-- **Istanza EC2 Windows Server 2022** con GPU support
-- **Driver NVIDIA** preinstallati
-- **OBS Studio** installato automaticamente
-- **Security Group** configurato per RDP
-- **UserData script** per installazione automatica software
+- **EC2 Windows Server 2022** with GPU support
+- **NVIDIA drivers** pre-installed
+- **OBS Studio** automatically installed
+- **Amazon DCV** for secure remote access
+- **Security Group** configured for DCV
+- **UserData script** for automatic software installation
 
-## Risorse Create
+## Resources Created
 
 - EC2 Instance (Windows Server 2022)
-- Security Group per RDP
-- IAM Role e Instance Profile (se necessario)
+- Security Group for DCV
+- IAM Role and Instance Profile (if needed)
 
-## Output
+## Outputs
 
-- `instance_id` - ID dell'istanza EC2
-- `public_ip` - IP pubblico dell'istanza
-- `rdp_connection` - Comando per connettersi via RDP
+- `instance_id` - EC2 instance ID
+- `public_ip` - Instance public IP
+- `dcv_connection` - URL to connect via DCV
 
-## Costi
+## Instance Access
 
-L'istanza g4dn.xlarge ha un costo approssimativo di €0.47/ora in eu-west-1.
+After deployment, access the instance via Amazon DCV:
 
-## Note Tecniche
+### Step 1: Get Connection URL
+Use the URL provided in the `dcv_connection` output:
+```
+https://[PUBLIC_IP]:8443
+```
 
-- Utilizza l'organizzazione Terraform Cloud **hudl**
-- Configurato per il workspace **wyscout-magicbox-prod**
-- Utilizza AWS provider version 4.34.0 per compatibilità
-- Supporta assume_role per autenticazione AWS
-- Include default tags per Environment e Project
+### Step 2: Browser Access
+1. Open a web browser
+2. Navigate to the DCV URL
+3. Accept the SSL certificate warning (self-signed certificate)
+
+### Step 3: Login
+- **Username**: `Administrator`
+- **Password**: `WyObs2025!` (configured automatically)
+
+### Step 4: Use the Desktop
+Once connected, you'll have access to:
+- Windows desktop with GPU acceleration
+- OBS Studio (desktop shortcut available)
+- All installed streaming software
+
+### Alternative Access Methods
+- **DCV Native Client**: Download from AWS for better performance
+- **AWS Console**: Use EC2 Instance Connect for troubleshooting
+
+## Costs
+
+The g4dn.xlarge instance has an approximate cost of €0.47/hour in eu-west-1.
+
+## Technical Notes
+
+- Uses Terraform Cloud organization **hudl**
+- Configured for workspace **wyscout-magicbox-prod**
+- Uses AWS provider version 4.34.0 for compatibility
+- Supports assume_role for AWS authentication
+- Includes default tags for Environment and Project
+- **Amazon DCV** provides high-performance remote access for graphics applications

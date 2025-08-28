@@ -64,10 +64,68 @@ powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -Value 1
 
-# Configure Remote Desktop
-Write-Host "Configuring Remote Desktop..." -ForegroundColor Yellow
-Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+# Configure DCV instead of Remote Desktop
+Write-Host "Installing and configuring Amazon DCV..." -ForegroundColor Yellow
+
+# Set Administrator password for DCV access
+$adminPassword = "WyObs2025!" # Consider using a more secure method in production
+net user Administrator $adminPassword
+
+# Download and install DCV Server
+$dcvUrl = "https://d1uj6qtbmh3dt5.cloudfront.net/2023.1/Servers/nice-dcv-server-x64-Release-2023.1-15487.msi"
+$dcvPath = "C:\temp\dcv-server.msi"
+
+# Download DCV
+Invoke-WebRequest -Uri $dcvUrl -OutFile $dcvPath
+Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $dcvPath, "/quiet", "/norestart" -Wait
+
+# Configure DCV
+New-Item -Path "C:\Program Files\NICE\DCV\Server\conf" -ItemType Directory -Force
+$dcvConfig = @"
+[session-management]
+create-session = true
+
+[session-management/defaults]
+permissions-file = "%ProgramData%\NICE\dcv\default.perm"
+
+[session-management/automatic-console-session]
+owner = "Administrator"
+storage-root = "%home%"
+
+[connectivity]
+web-url-path = "/dcv"
+web-port = 8443
+
+[security]
+authentication = "system"
+
+[display]
+target-fps = 30
+"@
+
+Set-Content -Path "C:\Program Files\NICE\DCV\Server\conf\dcv.conf" -Value $dcvConfig
+
+# Configure DCV permissions
+$dcvPerms = @"
+[permissions]
+%any% allow builtin
+"@
+New-Item -Path "C:\ProgramData\NICE\dcv" -ItemType Directory -Force
+Set-Content -Path "C:\ProgramData\NICE\dcv\default.perm" -Value $dcvPerms
+
+# Configure Windows Firewall for DCV
+New-NetFirewallRule -DisplayName "DCV Server TCP" -Direction Inbound -Protocol TCP -LocalPort 8443 -Action Allow
+New-NetFirewallRule -DisplayName "DCV Server UDP" -Direction Inbound -Protocol UDP -LocalPort 8443 -Action Allow
+
+# Start DCV Server service
+Set-Service -Name "DCV Server" -StartupType Automatic
+Start-Service -Name "DCV Server"
+
+# Log the access information
+Write-Host "DCV Configuration completed!" -ForegroundColor Green
+Write-Host "Access URL will be: https://[PUBLIC_IP]:8443" -ForegroundColor Yellow
+Write-Host "Username: Administrator" -ForegroundColor Yellow
+Write-Host "Password: $adminPassword" -ForegroundColor Yellow
 
 # Install Windows Media Feature Pack (for codecs)
 Write-Host "Installing Windows Media Feature Pack..." -ForegroundColor Yellow

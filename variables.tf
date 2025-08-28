@@ -11,12 +11,12 @@ variable "instance_type" {
 }
 
 variable "key_name" {
-  description = "AWS key pair name for RDP access"
+  description = "AWS key pair name for DCV access"
   type        = string
 }
 
 variable "allowed_cidr_blocks" {
-  description = "CIDR blocks allowed for RDP access"
+  description = "CIDR blocks allowed for DCV access"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }

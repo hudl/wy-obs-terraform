@@ -13,9 +13,15 @@ output "private_ip" {
   value       = aws_instance.windows_gpu.private_ip
 }
 
-output "rdp_connection" {
-  description = "RDP connection command"
-  value       = "mstsc /v:${aws_instance.windows_gpu.public_ip}"
+output "dcv_connection" {
+  description = "DCV connection URL"
+  value       = "https://${aws_instance.windows_gpu.public_ip}:8443"
+}
+
+output "dcv_credentials" {
+  description = "DCV login credentials"
+  value       = "Username: Administrator | Password: WyObs2025!"
+  sensitive   = true
 }
 
 output "instance_dns" {
